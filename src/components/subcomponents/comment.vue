@@ -2,8 +2,8 @@
     <div class="cmt-container">
         <h3>发表评论</h3>
         <hr>
-        <textarea name="" id=""  placeholder="请输入评论内容（最多120字）"></textarea>
-        <mt-button type="primary" size="large">发表评论</mt-button>
+        <textarea name="" id=""  placeholder="请输入评论内容（最多120字）"v-model="msg"></textarea>
+        <mt-button type="primary" size="large" @click="postComment">发表评论</mt-button>
 
         <div class="cmt-list" v-for="(item, i) in comments" :key="item.add_time">
             <div class="cmt-item">
@@ -22,12 +22,14 @@
 
 </template>
 
-<script>
+<script type="text/ecmascript-6">
+    import { Toast } from "mint-ui"
     export default{
         data(){
             return{
                 pageIndex: 1,
-                comments:[] //所有的评论数据
+                comments:[], //所有的评论数据
+                msg:''
 
             }
 
@@ -55,6 +57,31 @@
                 this.getComments()
 
 
+            },
+            postComment(){
+                //校验是否为空
+                if(this.msg.trim().length === 0){
+                    return Toast("评论内容不能为空！")
+                }
+
+
+                //发表评论
+                this.$http.post('api/postcomment/'+this.$route.params.id,{
+                    content:this.msg.trim()
+                }).then(function (result) {
+                    if(result.body.status === 0){
+                        var cmt = {
+                            user_name:'匿名用户',
+                            add_time: Date.now(),
+                            content: this.msg.trim()
+                        }
+                        this.comments.unshift(cmt)
+                        this.msg = ""
+                    }
+
+                })
+
+
             }
 
         },
@@ -64,7 +91,7 @@
 
 </script>
 
-<style lang="scss" scoped>
+<style rel="stylesheet/scss" lang="scss" scoped>
     .cmt-container{
         h3{
             font-size: 18px;
